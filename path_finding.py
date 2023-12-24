@@ -33,7 +33,7 @@ class PathFinder:
 
         # Check if facing a wall
         total_edge_pixels = np.sum(edged == 255)
-        if total_edge_pixels < 0.75 * height * width:
+        if total_edge_pixels < 0.7 * height * width:
             return "FACE_WALL", -1, -1, frame
 
         qr_code_data = detect_qr_code(roi)

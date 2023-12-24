@@ -1,6 +1,7 @@
 import cv2
 import time
 import numpy as np
+import configparser
 from path_finding import PathFinder, detect_qr_code
 from obstacle_detection import detect_obstacles
 from datetime import datetime
@@ -29,9 +30,12 @@ state = WAITING
 # Initialize the PathFinder
 pathfinder = PathFinder()
 
-# Telegram configurations
-TOKEN = "XX"
-CHAT_ID = XX
+# Load Telegram configurations from the config file
+config = configparser.ConfigParser()
+config.read('config.txt')
+
+TOKEN = config.get('TELEGRAM', 'TELEGRAM_TOKEN')
+CHAT_ID = config.get('TELEGRAM', 'CHAT_ID')
 
 # Variable to remember wall turn direction
 wall_turn_direction = None
@@ -127,18 +131,19 @@ while True:
             move_robot_right()
         else:  # This caters to both "ON_TRACK" and "UNKNOWN" scenarios
             move_robot_forward()
-
+                
     # Process Obstacle Detection
-    obstacles, obstacle_centroids, frame_obstacle_processed = detect_obstacles(frame_obstacle)
-    if obstacles:
-        print("Obstacles detected in ROI:", obstacles)
-        stop_robot()
-        if len(obstacle_centroids) > 0:
-            avg_centroid_x = sum([c[0] for c in obstacle_centroids]) / len(obstacle_centroids)
-            if avg_centroid_x < FRAME_CENTER_X:
-                move_robot_right()
-            else:
-                move_robot_left()
+    if state == NAVIGATING_PATH:
+        obstacles, obstacle_centroids, frame_obstacle_processed = detect_obstacles(frame_obstacle)
+        if obstacles:
+            print("Obstacles detected in ROI:", obstacles)
+            stop_robot()
+            if len(obstacle_centroids) > 0:
+                avg_centroid_x = sum([c[0] for c in obstacle_centroids]) / len(obstacle_centroids)
+                if avg_centroid_x < FRAME_CENTER_X:
+                    move_robot_right()
+                else:
+                    move_robot_left()
 
     # Display results
     cv2.imshow("Corridor Following", frame_path)
