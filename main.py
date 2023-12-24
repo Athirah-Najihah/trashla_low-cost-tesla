@@ -31,8 +31,8 @@ state = WAITING
 pathfinder = PathFinder()
 
 # Telegram configurations
-TOKEN = "6583690251:AAEtxyziQ5MklKiwYeEu8n0MXwrzUxDhWVo"
-CHAT_ID = -4025228505
+TOKEN = "XX"
+CHAT_ID = XX
 
 # Variable to remember wall turn direction
 wall_turn_direction = None
