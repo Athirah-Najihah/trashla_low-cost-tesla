@@ -1,7 +1,6 @@
 import cv2
 import time
 import numpy as np
-# from ultrasonic_sensor import get_garbage_level, close_serial
 from path_finding import PathFinder, detect_qr_code
 from obstacle_detection import detect_obstacles
 from datetime import datetime
