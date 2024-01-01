@@ -114,6 +114,7 @@ while True:
 
             # Reverse first
             move_backward()
+            move_backward()
             time.sleep(1)  # Adjust the sleep time based on your robot's dynamics
             
             if wall_turn_direction == "LEFT":

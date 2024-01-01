@@ -67,7 +67,7 @@ void loop() {
 
   // Print the distance to Serial
   //Serial.println("Distance: " + String(distance));
-  // Print the distance to Serialmmmm
+  // Print the distance to Serial
   Serial.print("Distance: ");
   Serial.println(distance);
 
@@ -119,14 +119,14 @@ void stop_robot() {
 void turn_left_at_junction() {
   // Turn left by rotating the right motor forward
   motor1.setSpeed(0);
-  motor2.setSpeed(speed * 2);
+  motor2.setSpeed(speed * 3);
   delay(1000);  // Adjust the delay as needed for the turn duration
   stop_robot();
 }
 
 void turn_right_at_junction() {
   // Turn right by rotating the left motor forward
-  motor1.setSpeed(speed * 2);
+  motor1.setSpeed(speed * 3);
   motor2.setSpeed(0);
   delay(1000);  // Adjust the delay as needed for the turn duration
   stop_robot();

@@ -38,7 +38,7 @@ def detect_obstacles(img):
         box_width = w
         centroid = (x + w//2, y + h//2)  # compute the centroid
 
-        if ROI_Y_START <= centroid[1] <= ROI_Y_START + SCAN_ZONE_HEIGHT and box_width > 150:
+        if ROI_Y_START <= centroid[1] <= ROI_Y_START + SCAN_ZONE_HEIGHT and box_width > 130:
             detected_object = classNames[classIds[i]-1].upper()
             annotation_text = f"{detected_object} ({box_width}px)"
             detected_objects.append(detected_object)

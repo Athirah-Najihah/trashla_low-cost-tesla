@@ -19,7 +19,7 @@ class PathFinder:
     def path_finder(self, frame):
         # Set the ROI
         height, width = frame.shape[:2]
-        roi_start_y = height // 2
+        roi_start_y = 200
         roi = frame[roi_start_y:, :]
 
         gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
