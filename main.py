@@ -51,7 +51,7 @@ def send_telegram_notification():
     try:
         location = "FK Level 1"
         print(TOKEN)
-        bot = Bot(token="6762383802:AAEMpl9Lut4vCtQZCwjgkS_4u8cXhpvsyHw")
+        
         current_time = datetime.now().strftime("%Y-%m-%d, %I:%M:%S %p")
         message = f"‼️ Garbage Disposal Alert ‼️\nLocation: {location}\nDatetime: {current_time}\nPlease empty the bin."
         bot.sendMessage(chat_id=CHAT_ID, text=message)
