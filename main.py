@@ -4,10 +4,10 @@ import numpy as np
 import configparser
 from path_finding import PathFinder, detect_qr_code
 from obstacle_detection import detect_obstacles
+from telegram_util import send_telegram_notification
 from datetime import datetime
 from telegram import Bot
-from robot_control import (get_garbage_level, close_serial, stop_robot, move_robot_left, move_robot_right, 
-                           move_robot_forward, turn_left_at_junction, turn_right_at_junction, move_backward)
+from robot_control import *
 
 # Initialize cameras
 cap_path = cv2.VideoCapture(1)  # Camera for path finding
@@ -34,7 +34,7 @@ pathfinder = PathFinder()
 config = configparser.ConfigParser()
 config.read('config.txt')
 
-TOKEN = config.get('TELEGRAM', 'TELEGRAM_TOKEN')
+TOKEN = config.get('TELEGRAM', 'TOKEN')
 CHAT_ID = config.get('TELEGRAM', 'CHAT_ID')
 
 # Variable to remember wall turn direction
@@ -44,12 +44,14 @@ wall_turn_direction = None
 GARBAGE_THRESHOLD = 10
 
 previous_commands = []
+override = False
 
 
 def send_telegram_notification():
     try:
         location = "FK Level 1"
-        bot = Bot(token=TOKEN)
+        print(TOKEN)
+        bot = Bot(token="6762383802:AAEMpl9Lut4vCtQZCwjgkS_4u8cXhpvsyHw")
         current_time = datetime.now().strftime("%Y-%m-%d, %I:%M:%S %p")
         message = f"‼️ Garbage Disposal Alert ‼️\nLocation: {location}\nDatetime: {current_time}\nPlease empty the bin."
         bot.sendMessage(chat_id=CHAT_ID, text=message)
@@ -57,9 +59,14 @@ def send_telegram_notification():
     except Exception as e:
         print(f"Error while sending message: {e}")
 
+ct = 0
+qr_ct = 0
 while True:
-    garbage_level = get_garbage_level()
-    # garbage_level = 9
+    ct += 1
+    # garbage_level = get_garbage_level()
+    garbage_level = 15
+    if ct > 10:
+        garbage_level = 9
 
     if garbage_level is not None:
         if state == WAITING and garbage_level >= GARBAGE_THRESHOLD:
@@ -67,6 +74,7 @@ while True:
             state = STANDBY
         elif state == STANDBY and garbage_level < GARBAGE_THRESHOLD:
             print("Garbage level above threshold. Entering FULL_MODE.")
+            # time.sleep(10)
             state = FULL_MODE
         elif state == FULL_MODE and garbage_level >= GARBAGE_THRESHOLD:
             print("Garbage level below threshold. Returning to STANDBY mode.")
@@ -87,26 +95,35 @@ while True:
 
         if qr_code_data:
             print(f"QR Code Detected: {qr_code_data}. Pausing for a moment...")
-            time.sleep(1)  # Pause for 5 seconds
+            # time.sleep(1)  # Pause for 5 seconds
         
         if qr_code_data == "END":
             print("Detected END QR code! Stopping journey.")
-            stop_robot()
+            stop_robot(override)
             state = REACHED_END
             send_telegram_notification()
             break
 
         if qr_code_data in ["TURN_LEFT_AT_JUNCTION", "TURN_RIGHT_AT_JUNCTION", "FORWARD"]:
+            qr_ct += 1
             print(f"Detected QR Code: {qr_code_data}")
             if qr_code_data == "TURN_LEFT_AT_JUNCTION":
-                turn_left_at_junction()
+                print(f"QR COUNT IS: {qr_ct}")
+                if qr_ct > 15:
+                    override = True
+                    turn_left_at_junction(override)
+                    qr_ct = 0
+                    override = False
+
             elif qr_code_data == "TURN_RIGHT_AT_JUNCTION":
                 turn_right_at_junction()
+
             elif qr_code_data == "FORWARD":
-                move_robot_forward()
+                move_robot_forward(override)
+
             continue  # Move to the next frame
         
-        direction, cx, cy, frame_path = pathfinder.path_finder(frame_path)
+        direction, cx, cy, frame_path, wall_roi = pathfinder.path_finder(frame_path, wall_turn_direction)
 
         if direction == "FACE_WALL":
             if not wall_turn_direction:
@@ -114,43 +131,52 @@ while True:
 
             # Reverse first
             move_backward()
-            move_backward()
+            # move_backward()
             time.sleep(1)  # Adjust the sleep time based on your robot's dynamics
             
             if wall_turn_direction == "LEFT":
-                move_robot_left()
+                move_robot_left(override)
             else:
-                move_robot_right()
+                move_robot_right(override)
             time.sleep(1)
             continue
         else:
             wall_turn_direction = None  # Reset wall turn direction when not facing a wall
 
         if direction == "LEFT":
-            move_robot_left()
+            move_robot_left(override)
         elif direction == "RIGHT":
-            move_robot_right()
+            move_robot_right(override)
         else:  # This caters to both "ON_TRACK" and "UNKNOWN" scenarios
-            move_robot_forward()
+            move_robot_forward(override)
                 
     # Process Obstacle Detection
     if state == NAVIGATING_PATH:
-        obstacles, obstacle_centroids, frame_obstacle_processed = detect_obstacles(frame_obstacle)
-        if obstacles:
+        obstacles, obstacle_centroids, frame_obstacle = detect_obstacles(frame_obstacle)
+        if "PERSON" in obstacles:
+            override = True
+
             print("Obstacles detected in ROI:", obstacles)
-            stop_robot()
+            # stop_robot(override)
+
             if len(obstacle_centroids) > 0:
                 avg_centroid_x = sum([c[0] for c in obstacle_centroids]) / len(obstacle_centroids)
                 if avg_centroid_x < FRAME_CENTER_X:
-                    move_robot_right()
+                    # move_robot_right()
+                    avoid_obs_right(override)
+
                 else:
-                    move_robot_left()
+                    # move_robot_left(override)
+                    avoid_obs_left(override)
 
-    # Display results
+    override = False
+
+# Display results
+        
     cv2.imshow("Corridor Following", frame_path)
-    cv2.imshow("Obstacle Detection", frame_obstacle_processed)
+    cv2.imshow("Obstacle Detection", frame_obstacle)
 
-    if cv2.waitKey(500) & 0xFF == ord('q'):
+    if cv2.waitKey(100) & 0xFF == ord('q'):
         break
 
 cap_path.release()

@@ -29,7 +29,7 @@ def detect_obstacles(img):
     centroids = []
 
     SCAN_ZONE_HEIGHT = 300
-    ROI_Y_START = 250
+    ROI_Y_START = 200
 
     for i in indices:
         box = bbox[i]

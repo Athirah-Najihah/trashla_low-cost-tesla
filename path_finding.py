@@ -16,10 +16,10 @@ class PathFinder:
     def __init__(self):
         self.past_centroids = []
 
-    def path_finder(self, frame):
+    def path_finder(self, frame, wall_turn_direction):
         # Set the ROI
         height, width = frame.shape[:2]
-        roi_start_y = 200
+        roi_start_y = 10
         roi = frame[roi_start_y:, :]
 
         gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
@@ -33,8 +33,17 @@ class PathFinder:
 
         # Check if facing a wall
         total_edge_pixels = np.sum(edged == 255)
-        if total_edge_pixels < 0.7 * height * width:
-            return "FACE_WALL", -1, -1, frame
+        # Update ROI based on the direction
+        if total_edge_pixels < 0.2 * height * width:
+            # Robot is facing a wall
+            direction = "FACE_WALL"
+            wall_roi_start_x = 0
+            wall_roi_end_x = width // 2 if wall_turn_direction == "RIGHT" else width
+            wall_roi = frame[:, wall_roi_start_x:wall_roi_end_x]
+        else:
+            # Robot is not facing a wall
+            direction = "UNKNOWN"
+            wall_roi = None
 
         qr_code_data = detect_qr_code(roi)
         if qr_code_data:
@@ -81,7 +90,7 @@ class PathFinder:
             cv2.circle(frame, (cx, cy), 5, (255, 0, 0), -1)
 
             FRAME_CENTER_X = FRAME_WIDTH // 2
-            MARGIN = 50  # Adjust as needed
+            MARGIN = 70  # Adjust as needed
 
             if (FRAME_CENTER_X - MARGIN) < cx < (FRAME_CENTER_X + MARGIN):
                 direction = "ON_TRACK"
@@ -90,4 +99,13 @@ class PathFinder:
             else:
                 direction = "RIGHT"
 
-        return direction, cx, cy, frame
+            cv2.line(frame, (FRAME_CENTER_X, 0), (FRAME_CENTER_X, frame.shape[0]), (0, 255, 0), 2)
+
+            # Draw the margin lines
+            cv2.line(frame, (FRAME_CENTER_X - MARGIN, 0), (FRAME_CENTER_X - MARGIN, frame.shape[0]), (0, 0, 255), 2)
+            cv2.line(frame, (FRAME_CENTER_X + MARGIN, 0), (FRAME_CENTER_X + MARGIN, frame.shape[0]), (0, 0, 255), 2)
+
+            # Draw the point
+            cv2.circle(frame, (cx, frame.shape[0] // 2), 10, (255, 0, 0), -1)
+
+        return direction, cx, cy, frame, wall_roi
