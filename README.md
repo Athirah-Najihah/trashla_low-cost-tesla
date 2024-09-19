@@ -1,4 +1,4 @@
-# README.md or project documentation
+# README.md or Project Documentation
 ## Bachelor's Degree Final Year Project
 ### Configuration File
 
