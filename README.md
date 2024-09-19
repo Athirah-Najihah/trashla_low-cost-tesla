@@ -1,5 +1,5 @@
 # README.md or project documentation
-## Bachelor Degree's Final Year Project
+## Bachelor's Degree Final Year Project
 ### Configuration File
 
 1. **Create `config.txt`:**
