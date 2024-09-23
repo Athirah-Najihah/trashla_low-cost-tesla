@@ -30,15 +30,10 @@ ser.flushOutput()
 #         print(f"Error sending command: {e}")
 
 def send_command(command):
-    global last_sent_time
-    current_time = int(round(time.time() * 1000))
-    if current_time - last_sent_time >= 3500:  # 3000 milliseconds = 3 seconds
-        try:
-            ser.write((command + '\n').encode('utf-8'))
-            print("COMMAND SENT: ", command)
-            last_sent_time = current_time
-        except Exception as e:
-            print(f"Error sending command: {e}")
+
+    ser.write((command + '\n').encode('utf-8'))
+    print("COMMAND SENT: ", command)
+
 
 def override_robot(command):
     global override_last_sent_time
