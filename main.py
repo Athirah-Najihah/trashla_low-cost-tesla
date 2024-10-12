@@ -7,6 +7,7 @@ from obstacle_detection import detect_obstacles
 from datetime import datetime
 from telegram import Bot
 from robot_control import *
+import asyncio
 
 # Initialize cameras
 cap_path = cv2.VideoCapture(1)  # Camera for path finding
@@ -52,7 +53,8 @@ def send_telegram_notification():
         location = "FK Level 1"
         current_time = datetime.now().strftime("%Y-%m-%d, %I:%M:%S %p")
         message = f"‼️ Garbage Disposal Alert ‼️\nLocation: {location}\nDatetime: {current_time}\nPlease empty the bin."
-        bot.sendMessage(chat_id=CHAT_ID, text=message)
+        #bot.sendMessage(chat_id=CHAT_ID, text=message)
+        asyncio.run(bot.send_message(chat_id=CHAT_ID, text=message))
         print("Message sent successfully!")
     except Exception as e:
         print(f"Error while sending message: {e}")
@@ -146,7 +148,8 @@ while True:
         elif direction == "RIGHT":
             move_robot_right(override)
         else:  # This caters to both "ON_TRACK" and "UNKNOWN" scenarios
-            move_robot_forward(override)
+            move_robot_forward(            move_robot_forward(override)
+)
                 
     # Process Obstacle Detection
     if state == NAVIGATING_PATH:
