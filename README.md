@@ -1,5 +1,6 @@
-# README.md or project documentation
-## Configuration File
+# README.md or Project Documentation
+## Bachelor's Degree Final Year Project
+### Configuration File
 
 1. **Create `config.txt`:**
    - Create a new file named `config.txt` in the same directory as the Python script.
