@@ -148,8 +148,7 @@ while True:
         elif direction == "RIGHT":
             move_robot_right(override)
         else:  # This caters to both "ON_TRACK" and "UNKNOWN" scenarios
-            move_robot_forward(            move_robot_forward(override)
-)
+            move_robot_forward(override)
                 
     # Process Obstacle Detection
     if state == NAVIGATING_PATH:
