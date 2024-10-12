@@ -38,6 +38,8 @@ const int echoPin = 7;
 
 // Motor Speed
 int speed = 60;
+unsigned long previousMillis = 0;
+int interval = 500;
 
 // defines variables
 long duration;
@@ -45,81 +47,76 @@ int distance;
 
 // The setup routine runs once when you press reset.
 void setup() {
-  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
-  pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+  pinMode(trigPin, OUTPUT);  // Sets the trigPin as an Output
+  pinMode(echoPin, INPUT);   // Sets the echoPin as an Input
   Serial.begin(115200);
   //Serial.println("Hello");
   // move_forward();
   // move_backward();
+  // stop_robot();
   // move_robot_right();
   // move_robot_left();
   // strafe_right();
   // strafe_left();
-  turn_left_at_junction();
-  turn_right_at_junction();
+  // turn_left_at_junction();
+  // turn_right_at_junction();
 }
 
 // The loop routine runs over and over again forever.
 void loop() {
-  // Ultrasonic distance measurement
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
 
-  duration = pulseIn(echoPin, HIGH);
-  distance = duration * 0.034 / 2;
-
-  // Print the distance to Serial
-  //Serial.println("Distance: " + String(distance));
-  // Print the distance to Serial
-  Serial.print("Distance: ");
-  Serial.println(distance);
-
-  // Robot navigation commands
   if (Serial.available() > 0) {
     String command = Serial.readStringUntil('\n');
     Serial.println(command);
-    if (command == "LEFT") {
-      move_robot_left();
-    } else if (command == "RIGHT") {
-      move_robot_right();
-    } else if (command == "FORWARD") {
-      move_forward();
-    } else if (command == "STOP") {
-      stop_robot();
-    } else if (command == "TURN_LEFT_AT_JUNCTION") {
-      turn_left_at_junction();
-    } else if (command == "TURN_RIGHT_AT_JUNCTION") {
-      turn_right_at_junction();
-    } else if (command == "REVERSE") {
-      move_backward();
+    executeCommand(command);
+  } 
   
-    } else if (command == "STRAFE_LEFT") {
-      strafe_left();
+  // Non-blocking delay using millis()
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    // Update previousMillis for the next iteration
+    previousMillis = currentMillis;
     
-    } else if (command == "STRAFE_RIGHT") {
-      strafe_right();
-    }
+    // Perform any other tasks here that need to run periodically
   }
-  delay(100);
+}
+
+void executeCommand(String command) {
+  if (command == "LEFT") {
+    move_robot_left();
+  } else if (command == "RIGHT") {
+    move_robot_right();
+  } else if (command == "FORWARD") {
+    move_forward();
+  } else if (command == "STOP") {
+    stop_robot();
+  } else if (command == "TURN_LEFT_AT_JUNCTION") {
+    turn_left_at_junction();
+  } else if (command == "TURN_RIGHT_AT_JUNCTION") {
+    turn_right_at_junction();
+  } else if (command == "REVERSE") {
+    move_backward();
+  } else if (command == "STRAFE_LEFT") {
+    strafe_left();
+  } else if (command == "STRAFE_RIGHT") {
+    strafe_right();
+  }
 }
 
 void move_backward() {
   // Move both motors forward
-  motor1.setSpeed(speed);
+  motor1.setSpeed(-speed);
   motor2.setSpeed(speed);
-  delay(3000);  // Adjust the delay as needed for the forward duration
-  stop_robot();
+  // delay(3000);  // Adjust the delay as needed for the forward duration
+  // stop_robot();
 }
 
 void move_forward() {
   // Move both motors backward
-  motor1.setSpeed(-58);
+  motor1.setSpeed(speed);
   motor2.setSpeed(-speed);
-  delay(2500);  // Adjust the delay as needed for the backward duration
-  stop_robot();
+  // delay(2500);  // Adjust the delay as needed for the backward duration
+  // stop_robot();
 }
 
 void stop_robot() {
@@ -127,7 +124,6 @@ void stop_robot() {
   motor1.setSpeed(0);
   motor2.setSpeed(0);
   // delay(1500);
-
 }
 
 void strafe_left() {
@@ -136,8 +132,8 @@ void strafe_left() {
   move_robot_left();
   motor1.setSpeed(-58);
   motor2.setSpeed(-speed);
-  delay(1000);  //   // delay(1500);
-  stop_robot();
+  // delay(1000);  //   // delay(1500);
+  // stop_robot();
 }
 
 void strafe_right() {
@@ -146,44 +142,41 @@ void strafe_right() {
   move_robot_right();
   motor1.setSpeed(-58);
   motor2.setSpeed(-speed);
-  delay(1000);
-  stop_robot();
+  // delay(1000);
+  // stop_robot();
   // delay(1500);
-
 }
 
 void turn_right_at_junction() {
   // Turn left by rotating the right motor forward
   motor1.setSpeed(speed);
-  motor2.setSpeed(-speed);
-  delay(2000);  // Adjust the delay as needed for the turn duration
-  stop_robot();
-
+  motor2.setSpeed(speed);
+  // delay(2000);  // Adjust the delay as needed for the turn duration
+  // stop_robot();
 }
 
 void turn_left_at_junction() {
   // Turn right by rotating the left motor forward
-  motor1.setSpeed(-56);
-  motor2.setSpeed(speed);
-  delay(2000);  // Adjust the delay as needed for the turn duration
-  stop_robot();
+  motor1.setSpeed(-speed);
+  motor2.setSpeed(-speed);
+  // delay(2000);  // Adjust the delay as needed for the turn duration
+  // stop_robot();
 }
 
 void move_robot_right() {
   // Move left by reducing the speed of the left motor
-  motor1.setSpeed(-2);
-  motor2.setSpeed(-speed);
-  delay(1000);  // Adjust the delay as needed for the lateral movement duration
-  stop_robot();
+  motor1.setSpeed(speed);
+  motor2.setSpeed(speed);
+  // delay(1000);  // Adjust the delay as needed for the lateral movement duration
+  // stop_robot();
   // delay(1500);
 }
 
 void move_robot_left() {
   // Move right by reducing the speed of the right motor
   motor1.setSpeed(-speed);
-  motor2.setSpeed(-5);
-  delay(1000);  // Adjust the delay as needed for the lateral movement duration
-  stop_robot();
+  motor2.setSpeed(-speed);
+  // delay(1000);  // Adjust the delay as needed for the lateral movement duration
+  // stop_robot();
   // delay(1500);
-
 }
