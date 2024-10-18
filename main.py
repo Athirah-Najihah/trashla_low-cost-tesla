@@ -10,7 +10,7 @@ from robot_control import *
 import asyncio
 
 # Initialize cameras
-cap_path = cv2.VideoCapture(1)  # Camera for path finding
+cap_path = cv2.VideoCapture(2)  # Camera for path finding
 cap_obstacle = cv2.VideoCapture(0)  # Camera for obstacle detection
 
 # Constants for frame dimensions

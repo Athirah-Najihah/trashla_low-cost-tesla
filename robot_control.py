@@ -12,13 +12,13 @@ qr_override_last_sent_time = int(round(time.time() * 1000))
 # Initialize a deque to store the last N readings
 distance_buffer = collections.deque(maxlen=5)
 
-ser = serial.Serial('COM10', 115200)
+ser = serial.Serial('/dev/ttyACM0', 115200)
 
 # Wait for the serial connection to stabilize
 time.sleep(2)
 
-# Flush the input and output buffers
-ser.flushInput()
+# # Flush the input and output buffers
+# ser.flushInput()
 ser.flushOutput()
 
 # def override_robot(command):
@@ -31,8 +31,16 @@ ser.flushOutput()
 
 def send_command(command):
 
-    ser.write((command + '\n').encode('utf-8'))
-    print("COMMAND SENT: ", command)
+    global last_sent_time
+    current_time = int(round(time.time() * 1000))
+    if current_time - last_sent_time >= 3500:  # 3000 milliseconds = 3 seconds
+        try:
+            ser.write((command + '\n').encode('utf-8'))
+            print("COMMAND SENT: ", command)
+            last_sent_time = current_time
+        except Exception as e:
+            print(f"Error sending command: {e}")
+
 
 
 def override_robot(command):
