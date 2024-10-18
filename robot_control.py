@@ -57,7 +57,7 @@ def override_robot(command):
 def qr_override_robot(command):
     global qr_override_last_sent_time
     qr_override_current_time = int(round(time.time() * 1000))
-    if qr_override_current_time - qr_override_last_sent_time >= 1000:  # 3000 milliseconds = 3 seconds
+    if qr_override_current_time - qr_override_last_sent_time >= 5000:  # 3000 milliseconds = 3 seconds
         try:
             ser.write((command + '\n').encode('utf-8'))
             print("QR OVERRIDING THE ROBOT with command: ", command)  
@@ -135,9 +135,15 @@ def turn_left_at_junction(override):
 
     
 
-def turn_right_at_junction():
-    print("Turning Right at Junction")
-    send_command("TURN_RIGHT_AT_JUNCTION\n")
+def turn_right_at_junction(override):
+    cmd = "TURN_RIGHT_AT_JUNCTION\n"
+    
+    if not override:
+        print("TURN_RIGHT_AT_JUNCTION")
+        send_command(cmd)
+    else:
+        print("TURN_RIGHT_AT_JUNCTION(Override)")
+        qr_override_robot(cmd)
 
 def move_backward():
     print("Moving Robot Backward")

@@ -10,8 +10,8 @@ from robot_control import *
 import asyncio
 
 # Initialize cameras
-cap_path = cv2.VideoCapture(2)  # Camera for path finding
-cap_obstacle = cv2.VideoCapture(0)  # Camera for obstacle detection
+cap_path = cv2.VideoCapture(0)  # Camera for path finding
+cap_obstacle = cv2.VideoCapture(2)  # Camera for obstacle detection
 
 # Constants for frame dimensions
 FRAME_WIDTH = 640
@@ -116,10 +116,21 @@ while True:
                     override = False
 
             elif qr_code_data == "TURN_RIGHT_AT_JUNCTION":
-                turn_right_at_junction()
+                # turn_right_at_junction(override)
+                print(f"QR COUNT IS: {qr_ct}")
+                if qr_ct > 15:
+                    override = True
+                    turn_right_at_junction(override)
+                    qr_ct = 0
+                    override = False
 
             elif qr_code_data == "FORWARD":
-                move_robot_forward(override)
+                print(f"QR COUNT IS: {qr_ct}")
+                if qr_ct > 15:
+                    override = True
+                    move_robot_forward(override)
+                    qr_ct = 0
+                    override = False                
 
             continue  # Move to the next frame
         

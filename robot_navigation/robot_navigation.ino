@@ -50,7 +50,7 @@ void setup() {
   Serial.begin(115200);
   //Serial.println("Hello");
   // move_forward();
-  move_backward();
+  // move_backward();
   // move_robot_right();
   // move_robot_left();
   // strafe_right();
@@ -117,7 +117,7 @@ void move_backward() {
 void move_forward() {
   // Move both motors backward
   motor1.setSpeed(-speed);
-  motor2.setSpeed(58);
+  motor2.setSpeed(speed);
   delay(2500);  // Adjust the delay as needed for the backward duration
   stop_robot();
 }
@@ -173,7 +173,7 @@ void move_robot_right() {
   // Move left by reducing the speed of the left motor
   motor1.setSpeed(speed);
   motor2.setSpeed(speed);
-  delay(370);  // Adjust the delay as needed for the lateral movement duration
+  delay(400);  // Adjust the delay as needed for the lateral movement duration
   stop_robot();
   // delay(1500);
 }
@@ -182,7 +182,7 @@ void move_robot_left() {
   // Move right by reducing the speed of the right motor
   motor1.setSpeed(-speed);
   motor2.setSpeed(-speed);
-  delay(370);  // Adjust the delay as needed for the lateral movement duration
+  delay(400);  // Adjust the delay as needed for the lateral movement duration
   stop_robot();
   // delay(1500);
 
