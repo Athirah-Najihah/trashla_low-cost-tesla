@@ -1,5 +1,9 @@
 import pygame
 import sys
+from robot_control import *
+
+
+override = False
 
 # Initialize Pygame
 pygame.init()
@@ -41,18 +45,37 @@ while running:
     # Check key states and print direction
     if key_states[pygame.K_w]:
         print("Robot moves UP")
+        move_robot_forward(override)
+        
     elif key_states[pygame.K_s]:
         print("Robot moves DOWN")
+        move_backward(override)
+        
     elif key_states[pygame.K_a]:
         print("Robot moves LEFT")
+        move_robot_left(override)
+        
     elif key_states[pygame.K_d]:
         print("Robot moves RIGHT")
+        move_robot_right(override)
+        
     elif key_states[pygame.K_SPACE]:
         print("Robot stops")
+        # override = True
+        stop_robot(override)
+        # override = False 
+          
     elif key_states[pygame.K_LEFT]:
         print("Robot turns LEFT")
+        turn_left_at_junction(override)
+        
     elif key_states[pygame.K_RIGHT]:
         print("Robot turns RIGHT")
+        turn_right_at_junction(override)
+        
+    
+    # else:
+    #     nothing()
 
     # Update screen
     pygame.display.flip()

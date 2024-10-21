@@ -37,7 +37,7 @@ const int trigPin = 6;
 const int echoPin = 7;
 
 // Motor Speed
-int speed = 180;
+int speed = 60;
 
 // defines variables
 long duration;
@@ -49,8 +49,8 @@ void setup() {
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
   Serial.begin(115200);
   //Serial.println("Hello");
-  move_forward();
-  move_backward();
+  // move_forward();
+  // move_backward();
   // move_robot_right();
   // move_robot_left();
   // strafe_right();
@@ -103,22 +103,22 @@ void loop() {
       strafe_right();
     }
   }
-  delay(100);
+  // delay(100);
 }
 
 void move_backward() {
   // Move both motors forward
   motor1.setSpeed(speed);
-  motor2.setSpeed(speed);
-  delay(1000);  // Adjust the delay as needed for the forward duration
+  motor2.setSpeed(-speed);
+  delay(3000);  // Adjust the delay as needed for the forward duration
   stop_robot();
 }
 
 void move_forward() {
   // Move both motors backward
   motor1.setSpeed(-speed);
-  motor2.setSpeed(-speed);
-  delay(1000);  // Adjust the delay as needed for the backward duration
+  motor2.setSpeed(speed);
+  delay(2500);  // Adjust the delay as needed for the backward duration
   stop_robot();
 }
 
@@ -126,7 +126,7 @@ void stop_robot() {
   // Stop both motors
   motor1.setSpeed(0);
   motor2.setSpeed(0);
-  delay(1000);
+  // delay(1500);
 
 }
 
@@ -134,7 +134,7 @@ void strafe_left() {
   // Move left by reducing the speed of the left motor
   stop_robot();
   move_robot_left();
-  motor1.setSpeed(-speed);
+  motor1.setSpeed(-58);
   motor2.setSpeed(-speed);
   delay(1000);  //   // delay(1500);
   stop_robot();
@@ -144,7 +144,7 @@ void strafe_right() {
   // Move right by reducing the speed of the right motor
   stop_robot();
   move_robot_right();
-  motor1.setSpeed(-speed);
+  motor1.setSpeed(-58);
   motor2.setSpeed(-speed);
   delay(1000);
   stop_robot();
@@ -155,8 +155,8 @@ void strafe_right() {
 void turn_right_at_junction() {
   // Turn left by rotating the right motor forward
   motor1.setSpeed(speed);
-  motor2.setSpeed(-speed);
-  delay(1000);  // Adjust the delay as needed for the turn duration
+  motor2.setSpeed(speed);
+  delay(2000);  // Adjust the delay as needed for the turn duration
   stop_robot();
 
 }
@@ -164,16 +164,16 @@ void turn_right_at_junction() {
 void turn_left_at_junction() {
   // Turn right by rotating the left motor forward
   motor1.setSpeed(-speed);
-  motor2.setSpeed(speed);
-  delay(1000);  // Adjust the delay as needed for the turn duration
+  motor2.setSpeed(-speed);
+  delay(2000);  // Adjust the delay as needed for the turn duration
   stop_robot();
 }
 
 void move_robot_right() {
   // Move left by reducing the speed of the left motor
-  motor1.setSpeed(-5);
-  motor2.setSpeed(-speed);
-  delay(1000);  // Adjust the delay as needed for the lateral movement duration
+  motor1.setSpeed(speed);
+  motor2.setSpeed(speed);
+  delay(400);  // Adjust the delay as needed for the lateral movement duration
   stop_robot();
   // delay(1500);
 }
@@ -181,8 +181,8 @@ void move_robot_right() {
 void move_robot_left() {
   // Move right by reducing the speed of the right motor
   motor1.setSpeed(-speed);
-  motor2.setSpeed(-5);
-  delay(1000);  // Adjust the delay as needed for the lateral movement duration
+  motor2.setSpeed(-speed);
+  delay(400);  // Adjust the delay as needed for the lateral movement duration
   stop_robot();
   // delay(1500);
 
