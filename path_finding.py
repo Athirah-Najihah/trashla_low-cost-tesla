@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 from pyzbar.pyzbar import decode
+import csv
+import time
 
 FRAME_WIDTH = 640
 
@@ -15,6 +17,12 @@ def detect_qr_code(frame):
 class PathFinder:
     def __init__(self):
         self.past_centroids = []
+
+        # **Added CSV setup**
+        # Open or create a CSV file to log the data
+        with open('centroid_accuracy_data.csv', mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['Timestamp', 'Actual_Centroid_X', 'Ideal_Centroid_X', 'Centroid_Error'])
 
     def path_finder(self, frame, wall_turn_direction):
         # Set the ROI
@@ -33,79 +41,60 @@ class PathFinder:
 
         # Check if facing a wall
         total_edge_pixels = np.sum(edged == 255)
-        # Update ROI based on the direction
-        if total_edge_pixels < 0.2 * height * width:
-            # Robot is facing a wall
-            direction = "FACE_WALL"
-            wall_roi_start_x = 0
-            wall_roi_end_x = width // 2 if wall_turn_direction == "RIGHT" else width
-            wall_roi = frame[:, wall_roi_start_x:wall_roi_end_x]
-        else:
-            # Robot is not facing a wall
-            direction = "UNKNOWN"
-            wall_roi = None
-
-        qr_code_data = detect_qr_code(roi)
-        if qr_code_data:
-            print("QR Code Detected:", qr_code_data)
-            if qr_code_data in ["TURN_LEFT_AT_JUNCTION", "TURN_RIGHT_AT_JUNCTION", "FORWARD"]:
-                return qr_code_data, -1, -1, frame
-
-        lines = cv2.HoughLinesP(edged, 1, np.pi/180, 10, minLineLength=5, maxLineGap=10)
-
         direction = "UNKNOWN"
         cx, cy = -1, -1
 
-        if lines is not None:
-            centroids = []
-            for line in lines:
-                x1, y1, x2, y2 = line[0]
-                # Drawing the detected lines for visualization
-                cv2.line(frame, (x1, y1 + roi_start_y), (x2, y2 + roi_start_y), (0, 255, 0), 2)
+        if total_edge_pixels < 0.2 * height * width:
+            # Robot is facing a wall
+            direction = "FACE_WALL"
+        else:
+            # Detect QR codes
+            qr_code_data = detect_qr_code(roi)
+            if qr_code_data:
+                return qr_code_data, -1, -1, frame
 
-                mx, my = (x1 + x2) / 2, (y1 + y2) / 2 + roi_start_y
-                centroids.append((mx, my))
+            # Detect lines using Hough Line Transform
+            lines = cv2.HoughLinesP(edged, 1, np.pi/180, 10, minLineLength=5, maxLineGap=10)
+            if lines is not None:
+                centroids = []
+                for line in lines:
+                    x1, y1, x2, y2 = line[0]
+                    mx, my = (x1 + x2) / 2, (y1 + y2) / 2 + roi_start_y
+                    centroids.append((mx, my))
 
-            # Calculate current frame's centroid
-            cx_current = int(np.mean([x for x, y in centroids]))
-            cy_current = int(np.mean([y for x, y in centroids]))
+                cx_current = int(np.mean([x for x, y in centroids]))
 
-            # Combine it with the previous centroid with some weighting
-            ALPHA = 0.7
-            if self.past_centroids:
-                cx_previous, cy_previous = self.past_centroids[-1]
-                cx = int(ALPHA * cx_current + (1 - ALPHA) * cx_previous)
-                cy = int(ALPHA * cy_current + (1 - ALPHA) * cy_previous)
-            else:
-                cx, cy = cx_current, cy_current
+                # Combine it with the previous centroid with some weighting
+                ALPHA = 0.7
+                if self.past_centroids:
+                    cx_previous, _ = self.past_centroids[-1]
+                    cx = int(ALPHA * cx_current + (1 - ALPHA) * cx_previous)
+                else:
+                    cx = cx_current
 
-            self.past_centroids.append((cx, cy))
-            if len(self.past_centroids) > 10:
-                self.past_centroids.pop(0)
+                self.past_centroids.append((cx, cy))
+                if len(self.past_centroids) > 10:
+                    self.past_centroids.pop(0)
 
-            # Temporal Smoothing
-            cx = int(np.mean([x for x, y in self.past_centroids]))
-            cy = int(np.mean([y for x, y in self.past_centroids]))
+                # Temporal Smoothing
+                cx = int(np.mean([x for x, _ in self.past_centroids]))
 
-            cv2.circle(frame, (cx, cy), 5, (255, 0, 0), -1)
+                # **Added ideal centroid calculation**
+                # Set the ideal centroid as the center of the frame
+                ideal_cx = FRAME_WIDTH // 2
 
-            FRAME_CENTER_X = FRAME_WIDTH // 2
-            MARGIN = 70  # Adjust as needed
+                # **Added centroid error calculation**
+                # Calculate the centroid error as the absolute difference
+                centroid_error = abs(cx - ideal_cx)
 
-            if (FRAME_CENTER_X - MARGIN) < cx < (FRAME_CENTER_X + MARGIN):
-                direction = "ON_TRACK"
-            elif cx < (FRAME_CENTER_X - MARGIN):
-                direction = "LEFT"
-            else:
-                direction = "RIGHT"
+                # **Added CSV logging**
+                # Log the data (timestamp, actual centroid, ideal centroid, centroid error)
+                timestamp = time.time()
+                with open('centroid_accuracy_data.csv', mode='a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([timestamp, cx, ideal_cx, centroid_error])
 
-            cv2.line(frame, (FRAME_CENTER_X, 0), (FRAME_CENTER_X, frame.shape[0]), (0, 255, 0), 2)
+                # **(Optional) Visualization** - This helps to see the centroids on the frame
+                cv2.circle(frame, (cx, cy), 5, (255, 0, 0), -1)
 
-            # Draw the margin lines
-            cv2.line(frame, (FRAME_CENTER_X - MARGIN, 0), (FRAME_CENTER_X - MARGIN, frame.shape[0]), (0, 0, 255), 2)
-            cv2.line(frame, (FRAME_CENTER_X + MARGIN, 0), (FRAME_CENTER_X + MARGIN, frame.shape[0]), (0, 0, 255), 2)
-
-            # Draw the point
-            cv2.circle(frame, (cx, frame.shape[0] // 2), 10, (255, 0, 0), -1)
-
-        return direction, cx, cy, frame, wall_roi
+        return direction, cx, cy, frame
