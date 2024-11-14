@@ -3,7 +3,7 @@ import time
 import numpy as np
 import configparser
 from path_finding import PathFinder, detect_qr_code
-from obstacle_detection import detect_obstacles
+from obstacle_detection import detect_obstacles, set_environment_type, close_logger
 from datetime import datetime
 from telegram import Bot
 from robot_control import *
@@ -33,7 +33,6 @@ pathfinder = PathFinder()
 # Load Telegram configurations from the config file
 config = configparser.ConfigParser()
 config.read('config.txt')
-
 TOKEN = config.get('TELEGRAM', 'TOKEN')
 CHAT_ID = config.get('TELEGRAM', 'CHAT_ID')
 
@@ -42,7 +41,6 @@ wall_turn_direction = None
 
 # Threshold for garbage level (in cm). Adjust this value based on the requirements.
 GARBAGE_THRESHOLD = 10
-
 previous_commands = []
 override = False
 
@@ -80,19 +78,22 @@ while True:
             print("Garbage level below threshold. Returning to STANDBY mode.")
             state = STANDBY
 
+    # Capture frames from both cameras
     ret_path, frame_path = cap_path.read()
     ret_obstacle, frame_obstacle = cap_obstacle.read()
 
+    # Key input to set environment type for obstacle detection
+    key = cv2.waitKey(1) & 0xFF
+    set_environment_type(key)  # Update environment type based on key press ('n' for narrow, 'o' for open)
+    
     if state == STANDBY:
         print("Robot in STANDBY mode. Waiting for garbage level to rise.")
-
     elif state == FULL_MODE:
         print("Garbage level above threshold. Starting journey.")
         state = NAVIGATING_PATH
 
     elif state == NAVIGATING_PATH:
         qr_code_data = detect_qr_code(frame_path)
-
         if qr_code_data:
             print(f"QR Code Detected: {qr_code_data}. Pausing for a moment...")
             # time.sleep(1)  # Pause for 5 seconds
@@ -114,7 +115,6 @@ while True:
                     turn_left_at_junction(override)
                     qr_ct = 0
                     override = False
-
             elif qr_code_data == "TURN_RIGHT_AT_JUNCTION":
                 # turn_right_at_junction(override)
                 print(f"QR COUNT IS: {qr_ct}")
@@ -123,7 +123,6 @@ while True:
                     turn_right_at_junction(override)
                     qr_ct = 0
                     override = False
-
             elif qr_code_data == "FORWARD":
                 print(f"QR COUNT IS: {qr_ct}")
                 if qr_ct > 15:
@@ -134,6 +133,7 @@ while True:
 
             continue  # Move to the next frame
         
+        # Path finding logic
         direction, cx, cy, frame_path, wall_roi = pathfinder.path_finder(frame_path, wall_turn_direction)
 
 
@@ -193,15 +193,16 @@ while True:
 
     override = False
 
-# Display results
-        
+    # Display results 
     cv2.imshow("Corridor Following", frame_path)
     cv2.imshow("Obstacle Detection", frame_obstacle)
 
-    if cv2.waitKey(100) & 0xFF == ord('q'):
+    # Exit on 'q' key press
+    if key == ord('q'):
         break
 
 cap_path.release()
 cap_obstacle.release()
 cv2.destroyAllWindows()
 close_serial()  # Close the serial connection
+close_logger()  # Close CSV file for precision-recall data logging

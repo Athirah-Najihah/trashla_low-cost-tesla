@@ -24,7 +24,7 @@ class PathFinder:
         self.start_time = time.time()  # Start time for FPS calculation
         self.csv_file = open('pathfinding_metrics.csv', mode='w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
-        self.csv_writer.writerow(['Frame', 'Direction', 'Center_X', 'Center_Y', 'QR Code Detected', 'FPS', 'Ideal_Center_X', 'Centroid_Error'])
+        self.csv_writer.writerow(['Frame', 'Direction', 'Center_X', 'Center_Y', 'QR Code Detected', 'FPS', 'Centroid Error'])
 
     def path_finder(self, frame, wall_turn_direction):
         self.total_frames += 1
@@ -50,9 +50,6 @@ class PathFinder:
         if total_edge_pixels < 0.2 * height * width:
             print("FACING WALL")
             direction = "FACE_WALL"
-            wall_roi_start_x = 0
-            wall_roi_end_x = width // 2 if wall_turn_direction == "RIGHT" else width
-            wall_roi = frame[:, wall_roi_start_x:wall_roi_end_x]
         else:
             direction = "UNKNOWN"
             wall_roi = None
@@ -93,9 +90,9 @@ class PathFinder:
             else:
                 cx, cy = cx_current, cy_current
 
-            self.past_centroids.append((cx, cy))
-            if len(self.past_centroids) > 10:
-                self.past_centroids.pop(0)
+                self.past_centroids.append((cx, cy))
+                if len(self.past_centroids) > 10:
+                    self.past_centroids.pop(0)
 
             cx = int(np.mean([x for x, y in self.past_centroids]))
             cy = int(np.mean([y for x, y in self.past_centroids]))
@@ -127,8 +124,9 @@ class PathFinder:
         frame_processing_time = time.time() - frame_start_time
         fps = 1 / frame_processing_time if frame_processing_time > 0 else 0
 
-        # Log data for this frame, including centroid error and ideal center X
-        self.csv_writer.writerow([self.total_frames, direction, cx, cy, 'N/A', round(fps, 2), ideal_cx, centroid_error])
+        # Log data for this frame
+        centroid_error = abs(cx - FRAME_CENTER_X)
+        self.csv_writer.writerow([self.total_frames, direction, cx, cy, 'N/A', round(fps, 2), centroid_error])
 
         return direction, cx, cy, frame, wall_roi
 
