@@ -4,7 +4,7 @@ def main():
     # Open the first camera (usually the default camera)
     cap1 = cv2.VideoCapture(0)
     # Open the second camera (change the index if you have multiple cameras)
-    cap2 = cv2.VideoCapture(1)
+    cap2 = cv2.VideoCapture(2)
 
     if not cap1.isOpened() or not cap2.isOpened():
         print("Error: Could not open one or both cameras.")

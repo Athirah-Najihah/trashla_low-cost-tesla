@@ -5,6 +5,7 @@ import time
 import csv
 
 FRAME_WIDTH = 640
+direction = "UKNOWN"
 
 def detect_qr_code(frame):
     qr_codes = decode(frame)
@@ -23,7 +24,7 @@ class PathFinder:
         self.start_time = time.time()  # Start time for FPS calculation
         self.csv_file = open('pathfinding_metrics.csv', mode='w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
-        self.csv_writer.writerow(['Frame', 'Direction', 'Center_X', 'Center_Y', 'QR Code Detected', 'FPS'])
+        self.csv_writer.writerow(['Frame', 'Direction', 'Center_X', 'Center_Y', 'QR Code Detected', 'FPS', 'Ideal_Center_X', 'Centroid_Error'])
 
     def path_finder(self, frame, wall_turn_direction):
         self.total_frames += 1
@@ -45,7 +46,9 @@ class PathFinder:
 
         # Check if facing a wall
         total_edge_pixels = np.sum(edged == 255)
+        print(f"total edge pixel: {total_edge_pixels}")
         if total_edge_pixels < 0.2 * height * width:
+            print("FACING WALL")
             direction = "FACE_WALL"
             wall_roi_start_x = 0
             wall_roi_end_x = width // 2 if wall_turn_direction == "RIGHT" else width
@@ -55,20 +58,21 @@ class PathFinder:
             wall_roi = None
 
         qr_code_data = detect_qr_code(roi)
-        print(f"QR Code Data: {qr_code_data}")  # Debugging line
+        # print(f"QR Code Data: {qr_code_data}")  # Debugging line
         if qr_code_data:
             self.qr_code_detected_count += 1
             print("QR Code Detected:", qr_code_data)  # Debugging line
             print("Logging QR Code to CSV")  # Debugging line
-            self.csv_writer.writerow([self.total_frames, 'QR_CODE_DETECTED', -1, -1, qr_code_data, 'N/A'])
+            self.csv_writer.writerow([self.total_frames, 'QR_CODE_DETECTED', -1, -1, qr_code_data, 'N/A', 'N/A', 'N/A'])
             if qr_code_data in ["TURN_LEFT_AT_JUNCTION", "TURN_RIGHT_AT_JUNCTION", "FORWARD"]:
                 return qr_code_data, -1, -1, frame
 
-
         lines = cv2.HoughLinesP(edged, 1, np.pi / 180, 10, minLineLength=5, maxLineGap=10)
 
-        direction = "UNKNOWN"
+        # direction = "UNKNOWN"
         cx, cy = -1, -1
+        ideal_cx = FRAME_WIDTH // 2  # Initialize ideal_cx here
+        centroid_error = -1
 
         if lines is not None:
             centroids = []
@@ -98,6 +102,10 @@ class PathFinder:
 
             cv2.circle(frame, (cx, cy), 5, (255, 0, 0), -1)
 
+            # Calculate the ideal centroid (center of the frame)
+            ideal_cx = FRAME_WIDTH // 2
+            centroid_error = abs(cx - ideal_cx)
+
             FRAME_CENTER_X = FRAME_WIDTH // 2
             MARGIN = 70  # Adjust as needed
 
@@ -119,8 +127,8 @@ class PathFinder:
         frame_processing_time = time.time() - frame_start_time
         fps = 1 / frame_processing_time if frame_processing_time > 0 else 0
 
-        # Log data for this frame
-        self.csv_writer.writerow([self.total_frames, direction, cx, cy, 'N/A', round(fps, 2)])
+        # Log data for this frame, including centroid error and ideal center X
+        self.csv_writer.writerow([self.total_frames, direction, cx, cy, 'N/A', round(fps, 2), ideal_cx, centroid_error])
 
         return direction, cx, cy, frame, wall_roi
 

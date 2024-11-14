@@ -19,7 +19,7 @@ net.setInputMean((127.5, 127.5, 127.5))
 net.setInputSwapRB(True)
 
 def detect_obstacles(img):
-    classIds, confs, bbox = net.detect(img, confThreshold=0.5)
+    classIds, confs, bbox = net.detect(img, confThreshold=0.3)
     bbox = list(bbox)
     confs = list(np.array(confs).reshape(1, -1)[0])
     confs = list(map(float, confs))
@@ -41,6 +41,7 @@ def detect_obstacles(img):
         if ROI_Y_START <= centroid[1] <= ROI_Y_START + SCAN_ZONE_HEIGHT and box_width > 130:
             detected_object = classNames[classIds[i]-1].upper()
             annotation_text = f"{detected_object} ({box_width}px)"
+            # print(annotation_text)
             detected_objects.append(detected_object)
             centroids.append(centroid)
 

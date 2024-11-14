@@ -6,7 +6,7 @@ import collections
 
 
 last_sent_time = int(round(time.time() * 1000))
-override_last_sent_time = int(round(time.time() * 51000))
+override_last_sent_time = int(round(time.time() * 1000))
 qr_override_last_sent_time = int(round(time.time() * 1000))
 
 # Initialize a deque to store the last N readings
@@ -47,6 +47,7 @@ def override_robot(command):
     global override_last_sent_time
     override_current_time = int(round(time.time() * 1000))
     if override_current_time - override_last_sent_time >= 1000:  # 3000 milliseconds = 3 seconds
+        print("TRIGGERING OVERRIDE")
         try:
             ser.write((command + '\n').encode('utf-8'))
             print("OVERRIDING THE ROBOT with command: ", command)  
@@ -145,9 +146,18 @@ def turn_right_at_junction(override):
         print("TURN_RIGHT_AT_JUNCTION(Override)")
         qr_override_robot(cmd)
 
-def move_backward():
+def move_backward(override):
     print("Moving Robot Backward")
-    send_command("REVERSE\n")
+    # send_command("REVERSE\n")
+    
+    cmd = "REVERSE\n"
+    
+    if not override:
+        print("REVERSE")
+        send_command(cmd)
+    else:
+        print("REVERSE(Override)")
+        override_robot(cmd)
 
 def get_garbage_level():
     """
