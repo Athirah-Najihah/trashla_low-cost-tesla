@@ -6,6 +6,8 @@ import csv
 
 FRAME_WIDTH = 640
 direction = "UKNOWN"
+wall_roi = None
+FRAME_CENTER_X = None
 
 def detect_qr_code(frame):
     qr_codes = decode(frame)
@@ -27,6 +29,9 @@ class PathFinder:
         self.csv_writer.writerow(['Frame', 'Direction', 'Center_X', 'Center_Y', 'QR Code Detected', 'FPS', 'Centroid Error'])
 
     def path_finder(self, frame, wall_turn_direction):
+        
+        global wall_roi, FRAME_CENTER_X
+        
         self.total_frames += 1
         frame_start_time = time.time()  # To measure processing time per frame
 

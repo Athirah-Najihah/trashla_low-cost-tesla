@@ -34,11 +34,18 @@ frame_count = 0
 def set_environment_type(key):
     """Switch environment based on key press."""
     global environment_type, ground_truth_objects
+
+    print(f"                                                                Pressed key: {key} | Current Environment: {environment_type}")
+    
     if key == ord('n'):
+
         environment_type = "narrow"
+        print(f"                                                                Current Environment: {environment_type}")
         ground_truth_objects = ["door"]
     elif key == ord('o'):
         environment_type = "open"
+        print(f"                                                                Current Environment: {environment_type}")
+
         ground_truth_objects = ["door", "couch", "chair", "potted plant", "person"]
 
 def detect_obstacles(img):
@@ -92,6 +99,7 @@ def evaluate_and_log(detected_objects):
     # Calculate precision and recall
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    frame_count += 1
 
     # Log to CSV
     csv_writer.writerow([frame_count, environment_type, tp, fp, fn, precision, recall])
