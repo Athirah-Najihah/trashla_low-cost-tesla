@@ -23,7 +23,7 @@ class PathFinder:
         self.start_time = time.time()  # Start time for FPS calculation
         self.csv_file = open('pathfinding_metrics.csv', mode='w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
-        self.csv_writer.writerow(['Frame', 'Direction', 'Center_X', 'Center_Y', 'QR Code Detected', 'FPS'])
+        self.csv_writer.writerow(['Frame', 'Direction', 'Center_X', 'Center_Y', 'QR Code Detected', 'FPS', 'Centroid Error'])
 
     def path_finder(self, frame, wall_turn_direction):
         self.total_frames += 1
@@ -117,7 +117,8 @@ class PathFinder:
         fps = 1 / frame_processing_time if frame_processing_time > 0 else 0
 
         # Log data for this frame
-        self.csv_writer.writerow([self.total_frames, direction, cx, cy, 'N/A', round(fps, 2)])
+        centroid_error = abs(cx - FRAME_CENTER_X)
+        self.csv_writer.writerow([self.total_frames, direction, cx, cy, 'N/A', round(fps, 2), centroid_error])
 
         return direction, cx, cy, frame, wall_roi
 
