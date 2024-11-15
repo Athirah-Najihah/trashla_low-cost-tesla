@@ -50,7 +50,6 @@ def set_environment_type(key):
 
 def detect_obstacles(img):
     """Detect obstacles and return detected objects and centroids."""
-    global frame_count
     classIds, confs, bbox = net.detect(img, confThreshold=thres)
     bbox = list(bbox)
     confs = list(np.array(confs).reshape(1, -1)[0])
@@ -92,6 +91,7 @@ def detect_obstacles(img):
 
 def evaluate_and_log(detected_objects):
     """Evaluate TP, FP, FN and log precision-recall data."""
+    global frame_count
     tp = len([obj for obj in detected_objects if obj in ground_truth_objects])
     fp = len([obj for obj in detected_objects if obj not in ground_truth_objects])
     fn = len([obj for obj in ground_truth_objects if obj not in detected_objects])
