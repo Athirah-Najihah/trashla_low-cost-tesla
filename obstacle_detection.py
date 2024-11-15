@@ -23,7 +23,7 @@ net.setInputMean((127.5, 127.5, 127.5))
 net.setInputSwapRB(True)
 
 # Initialize environment type and logging
-environment_type = "open"  # Default environment
+environment_type = "narrow"  # Default environment
 ground_truth_objects = []
 data_logger = open('precision_recall_data.csv', mode='w', newline='')
 csv_writer = csv.writer(data_logger)
