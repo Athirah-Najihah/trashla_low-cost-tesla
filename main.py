@@ -125,12 +125,17 @@ while True:
         
         direction, cx, cy, frame_path, wall_roi = pathfinder.path_finder(frame_path, wall_turn_direction)
 
-        if direction == "FACE_WALL":
-            if not wall_turn_direction:
-                wall_turn_direction = "LEFT" if np.random.choice([True, False]) else "RIGHT"
 
+        if direction == "FACE_WALL":
+            
+            # if not wall_turn_direction:
+            wall_turn_direction = "LEFT" if np.random.choice([True, False]) else "RIGHT"
+            print(f"[FACE WALL] wall turn direction: {wall_turn_direction}")
+            override = True
             # Reverse first
-            move_backward()
+            move_backward(override)
+            
+            override = False
             # move_backward()
             time.sleep(1)  # Adjust the sleep time based on your robot's dynamics
             
@@ -140,8 +145,8 @@ while True:
                 move_robot_right(override)
             time.sleep(1)
             continue
-        else:
-            wall_turn_direction = None  # Reset wall turn direction when not facing a wall
+        # else:
+        #     wall_turn_direction = None  # Reset wall turn direction when not facing a wall
 
         if direction == "LEFT":
             move_robot_left(override)
@@ -153,21 +158,27 @@ while True:
     # Process Obstacle Detection
     if state == NAVIGATING_PATH:
         obstacles, obstacle_centroids, frame_obstacle = detect_obstacles(frame_obstacle)
-        if "PERSON" in obstacles:
-            override = True
+        # if "PERSON" in obstacles:
+        override = True
 
-            print("Obstacles detected in ROI:", obstacles)
-            # stop_robot(override)
+        # print("Obstacles detected in ROI:", obstacles)
+        # stop_robot(override)
 
-            if len(obstacle_centroids) > 0:
-                avg_centroid_x = sum([c[0] for c in obstacle_centroids]) / len(obstacle_centroids)
-                if avg_centroid_x < FRAME_CENTER_X:
-                    # move_robot_right()
-                    avoid_obs_right(override)
+        if len(obstacle_centroids) > 0:
+            avg_centroid_x = sum([c[0] for c in obstacle_centroids]) / len(obstacle_centroids)
+            if avg_centroid_x < FRAME_CENTER_X:
+                # move_robot_right()
+                avoid_obs_right(override)
 
-                else:
-                    # move_robot_left(override)
-                    avoid_obs_left(override)
+            else:
+                # move_robot_left(override)
+                avoid_obs_left(override)
+                
+        for c in obstacle_centroids:
+            cv2.circle(frame_obstacle, (int(c[0]), int(c[1])), 10, (0, 255, 0), -1)  # Green circle for centroids
+
+        # Draw the center line
+            cv2.line(frame_obstacle, (FRAME_CENTER_X, 0), (FRAME_CENTER_X, 480), (0, 0, 255), 2)
 
     override = False
 
