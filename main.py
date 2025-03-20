@@ -31,11 +31,11 @@ state = WAITING
 pathfinder = PathFinder()
 
 # Load Telegram configurations from the config file
-config = configparser.ConfigParser()
-config.read('config.txt')
+# config = configparser.ConfigParser()
+# config.read('config.txt')
 
-TOKEN = config.get('TELEGRAM', 'TOKEN')
-CHAT_ID = config.get('TELEGRAM', 'CHAT_ID')
+# TOKEN = config.get('TELEGRAM', 'TOKEN')
+# CHAT_ID = config.get('TELEGRAM', 'CHAT_ID')
 
 # Variable to remember wall turn direction
 wall_turn_direction = None
@@ -47,17 +47,17 @@ previous_commands = []
 override = False
 
 
-def send_telegram_notification():
-    try:
-        bot = Bot(token=TOKEN)
-        location = "FK Level 1"
-        current_time = datetime.now().strftime("%Y-%m-%d, %I:%M:%S %p")
-        message = f"‼️ Garbage Disposal Alert ‼️\nLocation: {location}\nDatetime: {current_time}\nPlease empty the bin."
-        #bot.sendMessage(chat_id=CHAT_ID, text=message)
-        asyncio.run(bot.send_message(chat_id=CHAT_ID, text=message))
-        print("Message sent successfully!")
-    except Exception as e:
-        print(f"Error while sending message: {e}")
+# def send_telegram_notification():
+#     try:
+#         bot = Bot(token=TOKEN)
+#         location = "FK Level 1"
+#         current_time = datetime.now().strftime("%Y-%m-%d, %I:%M:%S %p")
+#         message = f"‼️ Garbage Disposal Alert ‼️\nLocation: {location}\nDatetime: {current_time}\nPlease empty the bin."
+#         # bot.sendMessage(chat_id=CHAT_ID, text=message)
+#         asyncio.run(bot.send_message(chat_id=CHAT_ID, text=message))
+#         print("Message sent successfully!")
+#     except Exception as e:
+#         print(f"Error while sending message: {e}")
 
 ct = 0
 qr_ct = 0
@@ -101,7 +101,7 @@ while True:
             print("Detected END QR code! Stopping journey.")
             stop_robot(override)
             state = REACHED_END
-            send_telegram_notification()
+            # send_telegram_notification()
             break
 
         if qr_code_data in ["TURN_LEFT_AT_JUNCTION", "TURN_RIGHT_AT_JUNCTION", "FORWARD"]:
@@ -116,21 +116,10 @@ while True:
                     override = False
 
             elif qr_code_data == "TURN_RIGHT_AT_JUNCTION":
-                # turn_right_at_junction(override)
-                print(f"QR COUNT IS: {qr_ct}")
-                if qr_ct > 15:
-                    override = True
-                    turn_right_at_junction(override)
-                    qr_ct = 0
-                    override = False
+                turn_right_at_junction()
 
             elif qr_code_data == "FORWARD":
-                print(f"QR COUNT IS: {qr_ct}")
-                if qr_ct > 15:
-                    override = True
-                    move_robot_forward(override)
-                    qr_ct = 0
-                    override = False                
+                move_robot_forward(override)
 
             continue  # Move to the next frame
         

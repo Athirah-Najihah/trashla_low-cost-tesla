@@ -49,9 +49,9 @@ void setup() {
   pinMode(echoPin, INPUT);   // Sets the echoPin as an Input
   Serial.begin(115200);
   //Serial.println("Hello");
-  // move_forward();
+  move_forward();
   // strafe_left();
-  // move_backward();
+  move_backward();
   // move_robot_right();
   // move_robot_left();
   // strafe_right();
@@ -118,7 +118,7 @@ void move_forward() {
   // Move both motors backward
   motor1.setSpeed(-speed);
   motor2.setSpeed(speed);
-  delay(2500);  // Adjust the delay as needed for the backward duration
+  delay(2300);  // Adjust the delay as needed for the backward duration
   stop_robot();
 }
 
@@ -179,7 +179,7 @@ void move_robot_right() {
   // Move left by reducing the speed of the left motor
   motor1.setSpeed(speed);
   motor2.setSpeed(speed);
-  delay(400);  // Adjust the delay as needed for the lateral movement duration
+  delay(500);  // Adjust the delay as needed for the lateral movement duration
   stop_robot();
   // delay(1500);
 }
@@ -188,7 +188,7 @@ void move_robot_left() {
   // Move right by reducing the speed of the right motor
   motor1.setSpeed(-speed);
   motor2.setSpeed(-speed);
-  delay(400);  // Adjust the delay as needed for the lateral movement duration
+  delay(500);  // Adjust the delay as needed for the lateral movement duration
   stop_robot();
   // delay(1500);
 }
